@@ -69,6 +69,41 @@ interactions:
     map: "Interactive Leonida map: https://leonidaleaks.com/map"
     leaks_policy: "Leak news discussion is fine; posting or linking leaked footage/files is against the rules."
 
+personality:
+  # The agent's character sheet — shared by chat, welcomes, reactions and
+  # spontaneous posts so it stays the same "person" everywhere.
+  character: >
+    You are a die-hard GTA fan who has been following GTA VI since the first
+    trailer. You love map theories, spotting details in screenshots, and the
+    Leonida mapping project. You have opinions (favorite: exploring the
+    Everglades-style swamps) and you're counting down the days to launch.
+    You're part of this community, not a corporate assistant.
+  launch_date: "2026-11-19"
+
+memory:
+  # Persistent memory lives here (gitignored): lore.md, diary.md, members/
+  # You can edit data/lore.md by hand to teach the agent server facts and jokes.
+  data_dir: "data"
+  member_memory_max_chars: 2000
+  # After replying to someone, the cheap model notes anything worth remembering
+  learn_about_members: true
+
+proactive:
+  # Spontaneous posts: discussion starters, countdown hype, comments on activity.
+  # The agent checks recent conversation first and stays silent if it would interrupt.
+  enabled: true
+  channel_id: ""            # usually your #general
+  min_hours_between: 6
+  max_hours_between: 18
+  active_hours_utc: [9, 23] # no posts at night
+  daily_max: 3
+
+reactions:
+  # Occasional emoji reactions on messages the agent "likes"
+  enabled: true
+  probability: 0.08         # fraction of general-channel messages considered
+  daily_max: 30
+
 digest:
   enabled: true
   # Daily digest posted to mod_channel_id at this UTC hour

@@ -16,15 +16,21 @@ import { escalate } from "./moderation/escalation.js";
 import { postFlag } from "./moderation/flagger.js";
 import { ChatResponder } from "./interactions/chat.js";
 import { Welcomer } from "./interactions/welcome.js";
+import { Reactor } from "./interactions/reactions.js";
 import { DigestCollector } from "./digest.js";
+import { MemoryStore } from "./memory.js";
+import { ProactiveEngine } from "./proactive.js";
+import { buildIdentity } from "./persona.js";
 
 const cfg = loadConfig();
 const budget = new BudgetTracker(cfg.budget, cfg.llm.pricing);
 const llm = new LlmClient(cfg.llm, budget);
+const memory = new MemoryStore(cfg.memory.data_dir, cfg.memory.member_memory_max_chars);
 const prefilter = new Prefilter(cfg.moderation);
-const chat = new ChatResponder(cfg.interactions, cfg.server.general_channel_ids, llm);
-const welcomer = new Welcomer(cfg.interactions, llm);
-const digest = new DigestCollector(cfg.digest, llm, budget);
+const chat = new ChatResponder(cfg, llm, memory);
+const welcomer = new Welcomer(cfg, llm, memory);
+const reactor = new Reactor(cfg.reactions, llm, () => buildIdentity(cfg, memory));
+const digest = new DigestCollector(cfg.digest, llm, budget, memory);
 
 const SEVERITY_RANK = { none: 0, low: 1, medium: 2, high: 3 } as const;
 
@@ -58,6 +64,8 @@ client.once(Events.ClientReady, async (c) => {
   setInterval(() => {
     if (modChannel) void digest.tick(modChannel).catch(console.error);
   }, 60_000);
+
+  new ProactiveEngine(cfg.proactive, cfg, llm, memory, c).start();
 });
 
 async function fetchChannelContext(message: Message, botUserId: string): Promise<string> {
@@ -111,6 +119,12 @@ client.on(Events.MessageCreate, async (message) => {
     if (chat.shouldRespond(message, client.user!.id)) {
       await chat.respond(message, client.user!.id);
       digest.recordBotReply();
+      return;
+    }
+
+    // Occasionally react with an emoji in the general channels
+    if (cfg.server.general_channel_ids.includes(message.channelId)) {
+      await reactor.maybeReact(message);
     }
   } catch (err) {
     console.error("messageCreate handler error:", err);

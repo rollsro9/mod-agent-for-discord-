@@ -40,6 +40,30 @@ const ConfigSchema = z.object({
     persona: z.string().default("You are a helpful Discord community assistant."),
     faq: z.record(z.string()).default({}),
   }),
+  personality: z.object({
+    character: z.string().default("You are a passionate GTA VI superfan."),
+    launch_date: z.string().default("2026-11-19"),
+  }),
+  memory: z.object({
+    data_dir: z.string().default("data"),
+    member_memory_max_chars: z.number().int().positive().default(2000),
+    // After replying to someone, ask the cheap model if anything is worth remembering
+    learn_about_members: z.boolean().default(true),
+  }),
+  proactive: z.object({
+    enabled: z.boolean().default(false),
+    channel_id: z.string().default(""),
+    min_hours_between: z.number().positive().default(6),
+    max_hours_between: z.number().positive().default(18),
+    // [from, to) UTC hours in which spontaneous posts are allowed
+    active_hours_utc: z.tuple([z.number().int().min(0).max(23), z.number().int().min(0).max(23)]).default([9, 23]),
+    daily_max: z.number().int().min(0).default(3),
+  }),
+  reactions: z.object({
+    enabled: z.boolean().default(true),
+    probability: z.number().min(0).max(1).default(0.08),
+    daily_max: z.number().int().min(0).default(30),
+  }),
   digest: z.object({
     enabled: z.boolean().default(true),
     post_hour_utc: z.number().int().min(0).max(23).default(21),

@@ -2,6 +2,7 @@ import type { TextChannel } from "discord.js";
 import type { Config } from "./config.js";
 import type { LlmClient } from "./llm/client.js";
 import type { BudgetTracker } from "./budget.js";
+import type { MemoryStore } from "./memory.js";
 
 interface DayStats {
   messages: number;
@@ -24,6 +25,7 @@ export class DigestCollector {
     private cfg: Config["digest"],
     private llm: LlmClient,
     private budget: BudgetTracker,
+    private memory: MemoryStore,
   ) {}
 
   recordMessage(channelName: string) {
@@ -76,5 +78,10 @@ LLM spend today: $${this.budget.spent.toFixed(3)}`;
     await modChannel.send({
       content: `**Daily digest — ${today}**\n${(result?.text ?? raw).slice(0, 1900)}`,
     });
+
+    // The agent's own long-term memory of the day
+    this.memory.appendDiary(
+      `Day summary: ${s.messages} msgs, ${s.joins.length} joins, ${s.flags.length} flags, ${s.botReplies} replies by me.`,
+    );
   }
 }
