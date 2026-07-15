@@ -1,0 +1,80 @@
+# mod-agent-for-discord configuration
+# Copy to config.yaml and fill in your values. config.yaml is gitignored.
+
+server:
+  # Staff-only channel where moderation flags, budget alerts and the daily digest are posted
+  mod_channel_id: "000000000000000000"
+  # Channel for welcome messages (empty = welcomes disabled)
+  welcome_channel_id: ""
+  # Channels where the bot may answer plain questions without being @mentioned
+  general_channel_ids: []
+
+llm:
+  # "glm" = any OpenAI-compatible endpoint (GLM/Zhipu, Ollama, vLLM, ...)
+  # "anthropic" = Claude API via ANTHROPIC_API_KEY
+  provider: "glm"
+  # Used by the glm provider only. Zhipu: https://open.bigmodel.cn/api/paas/v4
+  # Z.ai international: https://api.z.ai/api/paas/v4
+  base_url: "https://open.bigmodel.cn/api/paas/v4"
+  models:
+    classifier: "glm-4-flash"   # cheap: classifies flagged messages
+    chat: "glm-4-flash"         # member replies + welcomes
+    escalation: "glm-4-plus"    # strong: reviews serious cases for the mods
+    digest: "glm-4-flash"       # writes the daily staff digest
+  # USD per million tokens — used for the daily budget cap.
+  # Unknown models are billed at a conservative default ($5/$25).
+  pricing:
+    glm-4-flash: { input: 0.0, output: 0.0 }
+    glm-4-plus: { input: 0.6, output: 0.6 }
+    # If provider: anthropic
+    claude-haiku-4-5: { input: 1.0, output: 5.0 }
+    claude-opus-4-8: { input: 5.0, output: 25.0 }
+
+moderation:
+  # Zero-cost regex gate: only matching messages ever reach the LLM. Case-insensitive.
+  prefilter_patterns:
+    - "discord\\.gg/"
+    - "discord\\.com/invite"
+    - "free\\s+nitro"
+    - "nitro\\s+give?away"
+    - "steamcommunity\\.com/gift"
+    - "crack(ed|watch)?\\s+(download|version)"
+    - "torrent"
+    - "mod\\s*menu"
+    - "(sell|buy)(ing)?\\s+accounts?"
+    - "@everyone"
+  # Also classify when a message mentions more than N users
+  max_mentions: 5
+  # Verdicts at or above this severity get a second review by the escalation model
+  escalate_severity: "high"
+
+interactions:
+  respond_to_mentions: true
+  # Answer plain questions (ending with "?") in general_channel_ids
+  respond_in_general: true
+  user_cooldown_seconds: 30
+  channel_cooldown_seconds: 120
+  # Recent messages included as conversation context in replies
+  context_messages: 10
+  welcome_enabled: true
+  persona: >
+    You are the helpful community assistant of a GTA VI fan Discord server
+    focused on news, leak discussion and mapping the state of Leonida.
+    Be friendly and concise. Never share or link leaked game files or footage.
+    Answer in the language the user writes in.
+  # Canonical answers the bot prefers over its own knowledge
+  faq:
+    release_date: "GTA VI launches November 19, 2026 on PS5 and Xbox Series X|S."
+    map: "Interactive Leonida map: https://leonidaleaks.com/map"
+    leaks_policy: "Leak news discussion is fine; posting or linking leaked footage/files is against the rules."
+
+digest:
+  enabled: true
+  # Daily digest posted to mod_channel_id at this UTC hour
+  post_hour_utc: 21
+
+budget:
+  # Hard daily spend cap (USD). When reached: LLM calls stop until midnight UTC,
+  # moderation falls back to regex-flag-only, a notice is posted to the mod channel.
+  daily_usd_cap: 0.50
+  warn_fraction: 0.8
