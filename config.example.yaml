@@ -109,6 +109,16 @@ digest:
   # Daily digest posted to mod_channel_id at this UTC hour
   post_hour_utc: 21
 
+news:
+  # Daily public news roundup: the agent pulls the feeds, picks the genuinely
+  # interesting items and posts a short in-character roundup with links.
+  enabled: false
+  channel_id: ""            # your #news channel (text or announcement)
+  post_hour_utc: 10
+  sources:
+    - "https://www.reddit.com/r/GTA6/top/.rss?t=day"
+  max_items_per_source: 10
+
 budget:
   # Hard daily spend cap (USD). When reached: LLM calls stop until midnight UTC,
   # moderation falls back to regex-flag-only, a notice is posted to the mod channel.

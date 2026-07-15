@@ -68,6 +68,14 @@ const ConfigSchema = z.object({
     enabled: z.boolean().default(true),
     post_hour_utc: z.number().int().min(0).max(23).default(21),
   }),
+  news: z.object({
+    enabled: z.boolean().default(false),
+    channel_id: z.string().default(""),
+    post_hour_utc: z.number().int().min(0).max(23).default(10),
+    // RSS/Atom feeds to pull once a day
+    sources: z.array(z.string()).default([]),
+    max_items_per_source: z.number().int().positive().default(10),
+  }),
   budget: z.object({
     daily_usd_cap: z.number().positive().default(0.5),
     warn_fraction: z.number().min(0).max(1).default(0.8),

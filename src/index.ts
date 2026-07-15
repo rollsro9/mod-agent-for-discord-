@@ -19,6 +19,7 @@ import { Welcomer } from "./interactions/welcome.js";
 import { Reactor } from "./interactions/reactions.js";
 import { DigestCollector } from "./digest.js";
 import { MemoryStore } from "./memory.js";
+import { NewsWatcher } from "./news.js";
 import { ProactiveEngine } from "./proactive.js";
 import { buildIdentity } from "./persona.js";
 
@@ -61,8 +62,10 @@ client.once(Events.ClientReady, async (c) => {
         `Falling back to regex-only flagging until midnight UTC.`,
     );
 
+  const news = new NewsWatcher(cfg.news, cfg, llm, memory, c);
   setInterval(() => {
     if (modChannel) void digest.tick(modChannel).catch(console.error);
+    void news.tick().catch(console.error);
   }, 60_000);
 
   new ProactiveEngine(cfg.proactive, cfg, llm, memory, c).start();
