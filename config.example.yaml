@@ -13,19 +13,20 @@ llm:
   # "glm" = any OpenAI-compatible endpoint (GLM/Zhipu, Ollama, vLLM, ...)
   # "anthropic" = Claude API via ANTHROPIC_API_KEY
   provider: "glm"
-  # Used by the glm provider only. Zhipu: https://open.bigmodel.cn/api/paas/v4
-  # Z.ai international: https://api.z.ai/api/paas/v4
-  base_url: "https://open.bigmodel.cn/api/paas/v4"
+  # Used by the glm provider only. Z.ai international: https://api.z.ai/api/paas/v4
+  # Zhipu mainland: https://open.bigmodel.cn/api/paas/v4
+  base_url: "https://api.z.ai/api/paas/v4"
   models:
-    classifier: "glm-4-flash"   # cheap: classifies flagged messages
-    chat: "glm-4-flash"         # member replies + welcomes
-    escalation: "glm-4-plus"    # strong: reviews serious cases for the mods
-    digest: "glm-4-flash"       # writes the daily staff digest
+    classifier: "glm-4.5-flash"  # free tier: classifies flagged messages
+    chat: "glm-4.5-flash"        # member replies + welcomes
+    escalation: "glm-4.6"        # strong: reviews serious cases for the mods
+    digest: "glm-4.5-flash"      # writes the daily staff digest
   # USD per million tokens — used for the daily budget cap.
+  # Check your provider's current price list and adjust.
   # Unknown models are billed at a conservative default ($5/$25).
   pricing:
-    glm-4-flash: { input: 0.0, output: 0.0 }
-    glm-4-plus: { input: 0.6, output: 0.6 }
+    glm-4.5-flash: { input: 0.0, output: 0.0 }
+    glm-4.6: { input: 0.6, output: 2.2 }
     # If provider: anthropic
     claude-haiku-4-5: { input: 1.0, output: 5.0 }
     claude-opus-4-8: { input: 5.0, output: 25.0 }
