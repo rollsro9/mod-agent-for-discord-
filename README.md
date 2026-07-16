@@ -1,5 +1,7 @@
 # mod-agent-for-discord
 
+![Leonida Mod Agent Banner](./github_banner.jpg)
+
 LLM-powered, **context-aware** Discord moderation and community agent. Understands sarcasm, gaming banter and context where regex bots (Carl-bot, MEE6) see only keywords — and it talks to your members so you don't have to.
 
 **Human-in-the-loop by design: the bot never bans, never deletes, never times out. It flags, analyzes and recommends; your moderators decide.**
