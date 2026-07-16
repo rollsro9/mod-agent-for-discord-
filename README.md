@@ -1,8 +1,8 @@
-# mod-agent-for-discord
+# ModAgent: Context-Aware Discord AI Moderation Bot & Community Agent
 
 ![Discord AI Mod Agent Banner](./github_banner_v2.jpg)
 
-LLM-powered, **context-aware** Discord moderation and community agent. Understands sarcasm, gaming banter and context where regex bots (Carl-bot, MEE6) see only keywords — and it talks to your members so you don't have to.
+**ModAgent** is a self-hosted, open-source **Discord AI moderation bot** and context-aware community agent. Unlike traditional auto-moderators and regex bots (like MEE6 or Carl-bot) that only scan for blacklisted keywords, ModAgent uses Large Language Models (LLMs) to understand sarcasm, gaming banter, and chat context. It keeps your community safe while answering user questions and welcoming new members.
 
 **Human-in-the-loop by design: the bot never bans, never deletes, never times out. It flags, analyzes and recommends; your moderators decide.**
 
