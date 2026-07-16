@@ -6,6 +6,16 @@ LLM-powered, **context-aware** Discord moderation and community agent. Understan
 
 **Human-in-the-loop by design: the bot never bans, never deletes, never times out. It flags, analyzes and recommends; your moderators decide.**
 
+### Why ModAgent?
+
+| Feature | 🛡️ Standard Bots / AutoMod | 🧠 ModAgent (AI-Powered) |
+| :--- | :--- | :--- |
+| **Context Awareness** | ❌ **No**: Flags keywords blindly, ignoring game banter or sarcasm (e.g. flags "kill" in game chat). |  **Yes**: Reads chat history to understand context, slang, and true user intent. |
+| **Scam & Spam Detection** | ⚠️ **Basic**: Only blocks blacklisted links. Misses new domains or obfuscated text. |  **Semantic**: Recognizes the *intent* of "free nitro", account trading, or phishing, regardless of links. |
+| **Moderation Style** | 🤖 **Auto-ban/Mute**: Rigid actions that frustrate users and cause false positives. | 🧑‍✈️ **Human-in-the-loop**: Never auto-bans. Generates detailed reports in your staff channel; mods decide. |
+| **Community Engagement** | ❌ **None**: Only moderates, doesn't interact. |  **Active**: Autonomously welcomes new users, answers FAQ questions, and writes proactive posts. |
+| **Staff Reports** | ❌ **Raw logs only**: Hard-to-read audit trails. | 📊 **Daily Digest**: Summarizes server health, flag statistics, and API costs in a single friendly report. |
+
 ## How it works
 
 ```
