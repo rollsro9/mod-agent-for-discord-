@@ -61,7 +61,22 @@ export class NewsWatcher {
     if (!this.cfg.enabled || !this.cfg.channel_id) return;
     const now = new Date();
     const today = now.toISOString().slice(0, 10);
-    if (now.getUTCHours() !== this.cfg.post_hour_utc || this.lastPostedDay === today) return;
+
+    if (!this.lastPostedDay) {
+      try {
+        const diary = this.memory.getRecentDiary(50);
+        const matches = [...diary.matchAll(/- \[(\d{4}-\d{2}-\d{2})\] Posted the daily news roundup/g)];
+        if (matches.length > 0) {
+          this.lastPostedDay = matches[matches.length - 1][1];
+        }
+      } catch (err) {
+        console.error("Failed to restore lastPostedDay from diary:", err);
+      }
+    }
+
+    if (now.getUTCHours() !== this.cfg.post_hour_utc) return;
+    console.log(`news: tick matched post_hour_utc (${this.cfg.post_hour_utc} UTC). lastPostedDay: "${this.lastPostedDay}", today: "${today}".`);
+    if (this.lastPostedDay === today) return;
     this.lastPostedDay = today;
 
     const ch = await this.client.channels.fetch(this.cfg.channel_id);

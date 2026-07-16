@@ -2,9 +2,14 @@
 
 Bot Discord LLM-powered per il server **"GTA VI Mapping & Leaks"** di Lorenzo (community di leonidaleaks.com, progetto in `C:\Users\Lorenzo\AI\gta-website` — vedi il suo `CHECKPOINT.md` per il contesto generale).
 
-## Stato (2026-07-16 notte)
+## Stato (2026-07-16 pomeriggio)
 
-**Funzionante e testato live**: Q&A su mention ✓, flag moderazione in #moderator-only ✓. Bot = app Discord "Leonida Mod Agent#9393". Gira SOLO manualmente: `npm run dev` (nessun deploy 24/7 ancora).
+- **Controllo automatico permessi all'avvio** (`verifyChannelPermissions` in `src/index.ts`): verifica autonomamente che il bot disponga dei permessi `ViewChannel` e `SendMessages` in tutti i canali configurati (mod, welcome, news, general, proactive) al boot, stampando warning in console e segnalando eventuali mancanze in `#moderator-only`.
+- **Utility QA Welcome (`!testwelcome`)**: aggiunto comando riservato agli amministratori per simulare all'istante l'arrivo di un membro e testare la formattazione e i fallbacks del welcome message LLM-powered.
+- **Prevenzione double-posting su riavvio**: migliorata la stabilità di `NewsWatcher` e `DigestCollector` leggendo la data dell'ultimo invio direttamente dal persistente `diary.md` sul tick iniziale.
+- **Miglioramento log di diagnostica**: inserito logging di precisione all'ora di post per evidenziare skips e statistiche.
+- **Taratura prezzi Z.ai confermata**: verificato il listino ufficiale (gratuito per `glm-4.5-flash`/`glm-4.7-flash` e $0.60/$2.20 per `glm-4.6` per 1M token) e allineati `config.yaml` e `config.example.yaml`.
+- **Docker e Deploy**: `Dockerfile` pronto per deploy 24/7 su VPS Oracle Cloud. Gira manualmente in locale in fase di test.
 
 ## Cosa è
 
@@ -23,12 +28,10 @@ Agente community completo (TypeScript + discord.js + LLM via Z.ai/GLM):
 
 ## TASK APERTI (in ordine)
 
-1. **Test rassegna news NON concluso**: al test live (post_hour_utc temporaneo) nessun post e nessun errore nei log — probabile SKIP dell'LLM o 0 item dai feed. Ho aggiunto logging diagnostico in `src/news.ts` (righe `news: ...`). Ritestare: metti `post_hour_utc` all'ora UTC corrente in `config.yaml`, `npm run dev`, aspetta il tick (60s), leggi i log, poi RIMETTI `16`.
-2. **Verifica permessi Send del bot** su #news-leaks e #welcome (canali dove @everyone non scrive) — condizione necessaria per news e welcome.
-3. **Welcome da testare** col primo membro vero.
-4. **Deploy 24/7**: VPS free tier (Oracle Cloud, deciso da Lorenzo). `Dockerfile` pronto.
-5. **Pubblicare su GitHub** (obiettivo: repo open-source per stelle). Nessun remote configurato.
-6. Tarare `llm.pricing` in config.yaml sul listino z.ai reale (valori attuali = stime).
+1. **Test rassegna news**: Avviare il bot (`npm run dev`) per far girare i log. Grazie al nuovo logging, se l'ora UTC coincide, il bot stamperà in console i dettagli di fetch e del caricamento dei feed (verificando se l'LLM risponde o se i feed contengono elementi).
+2. **QA Welcome**: Digitare `!testwelcome` in un canale pubblico del server Discord (funziona solo per amministratori) per verificare il comportamento e il look del welcome message generato dall'LLM.
+3. **Deploy 24/7**: VPS free tier (Oracle Cloud, deciso da Lorenzo) via `Dockerfile`.
+4. **Pubblicare su GitHub**: inizializzare il remote repository ed effettuare il push del codice.
 
 ## Regole di lavoro (le stesse del progetto gta-website)
 

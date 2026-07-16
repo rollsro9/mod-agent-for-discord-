@@ -47,7 +47,22 @@ export class DigestCollector {
     if (!this.cfg.enabled) return;
     const now = new Date();
     const today = now.toISOString().slice(0, 10);
-    if (now.getUTCHours() !== this.cfg.post_hour_utc || this.lastPostedDay === today) return;
+
+    if (!this.lastPostedDay) {
+      try {
+        const diary = this.memory.getRecentDiary(50);
+        const matches = [...diary.matchAll(/- \[(\d{4}-\d{2}-\d{2})\] Day summary/g)];
+        if (matches.length > 0) {
+          this.lastPostedDay = matches[matches.length - 1][1];
+        }
+      } catch (err) {
+        console.error("Failed to restore lastPostedDay for digest from diary:", err);
+      }
+    }
+
+    if (now.getUTCHours() !== this.cfg.post_hour_utc) return;
+    console.log(`digest: tick matched post_hour_utc (${this.cfg.post_hour_utc} UTC). lastPostedDay: "${this.lastPostedDay}", today: "${today}".`);
+    if (this.lastPostedDay === today) return;
     this.lastPostedDay = today;
 
     const s = this.stats;

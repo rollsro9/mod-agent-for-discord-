@@ -4,6 +4,7 @@ import {
   Client,
   Events,
   GatewayIntentBits,
+  PermissionFlagsBits,
   type Message,
   type TextChannel,
 } from "discord.js";
@@ -46,6 +47,48 @@ const client = new Client({
 
 let modChannel: TextChannel | null = null;
 
+async function verifyChannelPermissions(
+  c: Client,
+  channelId: string | undefined,
+  purpose: string,
+  required: bigint[] = [PermissionFlagsBits.ViewChannel, PermissionFlagsBits.SendMessages]
+) {
+  if (!channelId) return;
+  try {
+    const ch = await c.channels.fetch(channelId);
+    if (!ch) {
+      console.warn(`[PermsCheck] Channel ${channelId} for ${purpose} not found.`);
+      void modChannel?.send(`⚠️ [PermsCheck] Channel <#${channelId}> for **${purpose}** was not found.`);
+      return;
+    }
+    if ('permissionsFor' in ch && ch.permissionsFor) {
+      const perms = ch.permissionsFor(c.user!);
+      if (!perms) {
+        console.warn(`[PermsCheck] Could not resolve permissions for channel ${ch.id} (${purpose}).`);
+        return;
+      }
+      const missing: string[] = [];
+      for (const req of required) {
+        if (!perms.has(req)) {
+          const name = Object.keys(PermissionFlagsBits).find(
+            (k) => (PermissionFlagsBits as any)[k] === req
+          ) ?? req.toString();
+          missing.push(name);
+        }
+      }
+      if (missing.length > 0) {
+        const msg = `⚠️ [PermsCheck] Bot is missing permissions in <#${ch.id}> (${purpose}): ${missing.join(", ")}`;
+        console.warn(msg);
+        void modChannel?.send(msg);
+      } else {
+        console.log(`[PermsCheck] Channel <#${ch.id}> (${purpose}) OK.`);
+      }
+    }
+  } catch (err) {
+    console.error(`[PermsCheck] Error verifying permissions for ${channelId} (${purpose}):`, err);
+  }
+}
+
 client.once(Events.ClientReady, async (c) => {
   console.log(`Logged in as ${c.user.tag}`);
   const ch = await c.channels.fetch(cfg.server.mod_channel_id);
@@ -61,6 +104,17 @@ client.once(Events.ClientReady, async (c) => {
       `🛑 Daily LLM budget exhausted ($${spent.toFixed(2)}/$${cap.toFixed(2)}). ` +
         `Falling back to regex-only flagging until midnight UTC.`,
     );
+
+  // Verify permissions for key channels
+  await verifyChannelPermissions(c, cfg.server.mod_channel_id, "moderator logs");
+  await verifyChannelPermissions(c, cfg.server.welcome_channel_id, "welcome messages");
+  await verifyChannelPermissions(c, cfg.news.channel_id, "news updates");
+  if (cfg.proactive.enabled) {
+    await verifyChannelPermissions(c, cfg.proactive.channel_id, "proactive engine");
+  }
+  for (const gcId of cfg.server.general_channel_ids) {
+    await verifyChannelPermissions(c, gcId, "general chat and reactions");
+  }
 
   const news = new NewsWatcher(cfg.news, cfg, llm, memory, c);
   setInterval(() => {
@@ -107,6 +161,27 @@ async function handleModeration(message: Message, reason: string): Promise<boole
 client.on(Events.MessageCreate, async (message) => {
   if (message.author.bot || !message.inGuild()) return;
   if (message.channelId === cfg.server.mod_channel_id) return; // never process staff channel
+
+  // Developer command: Test welcome logic
+  if (message.content === "!testwelcome" && message.member?.permissions.has(PermissionFlagsBits.ManageGuild)) {
+    try {
+      if (cfg.interactions.welcome_enabled && cfg.server.welcome_channel_id) {
+        const ch = await message.guild.channels.fetch(cfg.server.welcome_channel_id);
+        if (ch?.type === ChannelType.GuildText) {
+          await welcomer.welcome(message.member, ch);
+          await message.reply("Simulated welcome message sent!");
+        } else {
+          await message.reply("Welcome channel is not a text channel or not found.");
+        }
+      } else {
+        await message.reply("Welcome is disabled or welcome_channel_id is not set in config.");
+      }
+    } catch (err) {
+      console.error("!testwelcome command error:", err);
+      await message.reply(`Error running test: ${err instanceof Error ? err.message : String(err)}`);
+    }
+    return;
+  }
 
   const channelName = "name" in message.channel ? (message.channel.name ?? "?") : "?";
   digest.recordMessage(channelName);
