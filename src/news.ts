@@ -83,6 +83,7 @@ export class NewsWatcher {
         console.error(`news feed failed (${url}):`, err);
       }
     }
+    console.log(`news: fetched ${items.length} items from ${this.cfg.sources.length} feeds`);
     if (items.length === 0) return; // nothing fetched -> stay silent, retry tomorrow
 
     const list = items
@@ -98,7 +99,14 @@ Format: a short intro line in your voice, then one bullet per picked item: bold 
     const result = await this.llm.complete("chat", system, [
       { role: "user", content: `Today's feed items:\n${list}` },
     ], 700);
-    if (!result?.text || /^\s*SKIP\s*$/i.test(result.text)) return;
+    if (!result?.text) {
+      console.log("news: no LLM result (budget exhausted or API error)");
+      return;
+    }
+    if (/^\s*SKIP\s*$/i.test(result.text)) {
+      console.log("news: agent decided to SKIP today");
+      return;
+    }
 
     await channel.send({ content: result.text.slice(0, 2000) });
     this.memory.appendDiary(`Posted the daily news roundup in #${channel.name}.`);
