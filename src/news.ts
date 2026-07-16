@@ -107,19 +107,15 @@ export class NewsWatcher {
 
     const system = `${buildIdentity(this.fullCfg, this.memory)}
 
-You are writing today's news roundup for the #news channel. Below are today's top items from the community feeds. Pick the 2-4 genuinely interesting ones for GTA VI fans (news, trailer analysis, mapping finds, official announcements). SKIP: memes with no info, reposts, and anything that shares leaked game files or footage.
+You are writing today's news roundup for the #news channel. Below are today's top items from the community feeds. Pick the 2-4 most interesting ones for GTA VI fans (news, trailer analysis, mapping finds, community discussions). Do NOT include memes with no info, reposts, or anything that shares leaked game files or footage. Even if the news is minor or it is a quiet day, you MUST select the best available items and write the roundup.
 
-Format: a short intro line in your voice, then one bullet per picked item: bold title, your one-line take, and the link on the same bullet. Max 180 words total. If nothing is genuinely interesting today, respond with only the word SKIP.`;
-
+Format: a short intro line in your voice, then one bullet per picked item: bold title, your one-line take, and the link on the same bullet. Max 180 words total.`;
+  
     const result = await this.llm.complete("chat", system, [
       { role: "user", content: `Today's feed items:\n${list}` },
     ], 700);
     if (!result?.text) {
       console.log("news: no LLM result (budget exhausted or API error)");
-      return;
-    }
-    if (/^\s*SKIP\s*$/i.test(result.text)) {
-      console.log("news: agent decided to SKIP today");
       return;
     }
 
