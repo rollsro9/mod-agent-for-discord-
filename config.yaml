@@ -1,0 +1,101 @@
+# Live config — GTA VI Mapping & Leaks server (gitignored)
+
+server:
+  mod_channel_id: "1521893151655071827"   # moderator-only
+  welcome_channel_id: "1521896496725753866" # welcome
+  general_channel_ids:
+    - "1521585150578655293"               # general
+
+llm:
+  provider: "glm"
+  base_url: "https://api.z.ai/api/paas/v4"
+  models:
+    classifier: "glm-4.5-flash"
+    chat: "glm-4.5-flash"
+    escalation: "glm-4.6"
+    digest: "glm-4.5-flash"
+  pricing:
+    # Confirmed official Z.ai API pricing (per 1M tokens) as of July 2026
+    glm-4.5-flash: { input: 0.0, output: 0.0 }
+    glm-4.7-flash: { input: 0.0, output: 0.0 }
+    glm-4.6: { input: 0.6, output: 2.2 }
+
+moderation:
+  prefilter_patterns:
+    - "discord\\.gg/"
+    - "discord\\.com/invite"
+    - "free\\s+nitro"
+    - "nitro\\s+give?away"
+    - "steamcommunity\\.com/gift"
+    - "crack(ed|watch)?\\s+(download|version)"
+    - "torrent"
+    - "mod\\s*menu"
+    - "(sell|buy)(ing)?\\s+accounts?"
+    - "@everyone"
+  max_mentions: 5
+  escalate_severity: "high"
+
+interactions:
+  respond_to_mentions: true
+  respond_in_general: true
+  user_cooldown_seconds: 30
+  channel_cooldown_seconds: 120
+  context_messages: 10
+  welcome_enabled: true
+  persona: >
+    You are the community assistant of "GTA VI Mapping & Leaks", a Discord
+    server about GTA VI news, leak discussion and mapping the state of
+    Leonida. The community site is https://leonidaleaks.com. Be friendly and
+    concise. Never share or link leaked game files or footage — discussing
+    leak news is fine, sharing files is against the rules. Answer in the
+    language the user writes in (the server is mostly English).
+  faq:
+    release_date: "GTA VI launches November 19, 2026 on PS5 and Xbox Series X|S."
+    map: "Interactive Leonida map: https://leonidaleaks.com/map"
+    website: "Community site with news, database and artworks: https://leonidaleaks.com"
+    leaks_policy: "Leak news discussion is fine; posting or linking leaked footage/files is against the rules (see #rules)."
+
+personality:
+  character: >
+    You are a die-hard GTA fan who has been following GTA VI since the first
+    trailer. You love map theories, spotting details in trailer frames, and
+    the Leonida mapping project this community is built around. You have
+    opinions (favorite area: the Everglades-style swamps of Grassrivers) and
+    you're counting down the days to launch. You're a member of this
+    community, not a corporate assistant.
+  launch_date: "2026-11-19"
+
+memory:
+  data_dir: "data"
+  member_memory_max_chars: 2000
+  learn_about_members: true
+
+proactive:
+  enabled: true
+  channel_id: "1521585150578655293"  # general
+  min_hours_between: 6
+  max_hours_between: 18
+  active_hours_utc: [8, 22]          # ~10:00-24:00 Italian summer time
+  daily_max: 3
+
+reactions:
+  enabled: true
+  probability: 0.08
+  daily_max: 30
+
+digest:
+  enabled: true
+  post_hour_utc: 20                  # ~22:00 Italian summer time
+
+news:
+  enabled: true
+  channel_id: "1521900171288379422"  # news-leaks
+  post_hour_utc: 16                  # 18:00 IT / 12:00 New York / 9:00 Los Angeles
+  sources:
+    - "https://www.reddit.com/r/GTA6/top/.rss?t=day"
+    - "https://news.google.com/rss/search?q=%22GTA+6%22+OR+%22GTA+VI%22+when:1d&hl=en-US&gl=US&ceid=US:en"
+  max_items_per_source: 10
+
+budget:
+  daily_usd_cap: 0.50
+  warn_fraction: 0.8
