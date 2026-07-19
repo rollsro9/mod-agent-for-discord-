@@ -60,13 +60,13 @@ export class DigestCollector {
       }
     }
 
-    if (now.getUTCHours() !== this.cfg.post_hour_utc) return;
-    console.log(`digest: tick matched post_hour_utc (${this.cfg.post_hour_utc} UTC). lastPostedDay: "${this.lastPostedDay}", today: "${today}".`);
+    // Catch-up: post any time from post_hour_utc onward, so a bot started
+    // later in the day still delivers today's digest instead of skipping it.
+    if (now.getUTCHours() < this.cfg.post_hour_utc) return;
     if (this.lastPostedDay === today) return;
-    this.lastPostedDay = today;
+    console.log(`digest: past post_hour_utc (${this.cfg.post_hour_utc} UTC). lastPostedDay: "${this.lastPostedDay}", today: "${today}".`);
 
     const s = this.stats;
-    this.stats = emptyStats();
 
     const channels = [...s.perChannel.entries()]
       .sort((a, b) => b[1] - a[1])
@@ -93,6 +93,10 @@ LLM spend today: $${this.budget.spent.toFixed(3)}`;
     await modChannel.send({
       content: `**Daily digest — ${today}**\n${(result?.text ?? raw).slice(0, 1900)}`,
     });
+    // Only mark the day done and drop the stats after a successful send, so a
+    // transient failure is retried on the next tick without losing the day.
+    this.lastPostedDay = today;
+    this.stats = emptyStats();
 
     // The agent's own long-term memory of the day
     this.memory.appendDiary(

@@ -74,10 +74,11 @@ export class NewsWatcher {
       }
     }
 
-    if (now.getUTCHours() !== this.cfg.post_hour_utc) return;
-    console.log(`news: tick matched post_hour_utc (${this.cfg.post_hour_utc} UTC). lastPostedDay: "${this.lastPostedDay}", today: "${today}".`);
+    // Catch-up: post any time from post_hour_utc onward, so a bot started
+    // later in the day still delivers today's roundup instead of skipping it.
+    if (now.getUTCHours() < this.cfg.post_hour_utc) return;
     if (this.lastPostedDay === today) return;
-    this.lastPostedDay = today;
+    console.log(`news: past post_hour_utc (${this.cfg.post_hour_utc} UTC). lastPostedDay: "${this.lastPostedDay}", today: "${today}".`);
 
     const ch = await this.client.channels.fetch(this.cfg.channel_id);
     if (!ch || (ch.type !== ChannelType.GuildText && ch.type !== ChannelType.GuildAnnouncement)) {
@@ -120,6 +121,9 @@ Format: a short intro line in your voice, then one bullet per picked item: bold 
     }
 
     await channel.send({ content: result.text.slice(0, 2000) });
+    // Only mark the day as done after a successful send, so transient LLM/API
+    // failures are retried on the next tick instead of burning the whole day.
+    this.lastPostedDay = today;
     this.memory.appendDiary(`Posted the daily news roundup in #${channel.name}.`);
   }
 }
